@@ -392,20 +392,20 @@ function ImportFrom(/* {identifier} */ module, /* {asdl_seq *} */ names, /*
 }
 
 /** @constructor */
-function Exec(/* {expr_ty} */ body, /* {expr_ty} */ globals, /* {expr_ty} */
-                   locals, /* {int} */ lineno, /* {int} */ col_offset, /* {int}
-                   */ endlineno, /* {int} */ col_endoffset)
-{
-    goog.asserts.assert(body !== null && body !== undefined);
-    this.body = body;
-    this.globals = globals;
-    this.locals = locals;
-    this.lineno = lineno;
-    this.col_offset = col_offset;
-    this.endlineno = endlineno;
-    this.col_endoffset = col_endoffset;
-    return this;
-}
+//function Exec(/* {expr_ty} */ body, /* {expr_ty} */ globals, /* {expr_ty} */
+//                   locals, /* {int} */ lineno, /* {int} */ col_offset, /* {int}
+//                   */ endlineno, /* {int} */ col_endoffset)
+//{
+//    goog.asserts.assert(body !== null && body !== undefined);
+//    this.body = body;
+//    this.globals = globals;
+//    this.locals = locals;
+//    this.lineno = lineno;
+//    this.col_offset = col_offset;
+//    this.endlineno = endlineno;
+//    this.col_endoffset = col_endoffset;
+//    return this;
+//}
 
 /** @constructor */
 function Global(/* {asdl_seq *} */ names, /* {int} */ lineno, /* {int} */
@@ -1023,12 +1023,12 @@ ImportFrom.prototype._fields = [
     "names", function(n) { return n.names; },
     "level", function(n) { return n.level; }
 ];
-Exec.prototype._astname = "Exec";
+/*Exec.prototype._astname = "Exec";
 Exec.prototype._fields = [
     "body", function(n) { return n.body; },
     "globals", function(n) { return n.globals; },
     "locals", function(n) { return n.locals; }
-];
+];*/
 Global.prototype._astname = "Global";
 Global.prototype._fields = [
     "names", function(n) { return n.names; }

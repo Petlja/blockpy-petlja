@@ -2212,8 +2212,8 @@ function astForStmt(c, n) {
                 return astForImportStmt(c, n);
             case SYM.global_stmt:
                 return astForGlobalStmt(c, n);
-            case SYM.exec_stmt:
-                return astForExecStmt(c, n);
+            /*case SYM.exec_stmt:
+                return astForExecStmt(c, n);*/
             case SYM.assert_stmt:
                 return astForAssertStmt(c, n);
             case SYM.debugger_stmt:

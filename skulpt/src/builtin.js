@@ -887,6 +887,10 @@ Sk.builtin.eval_ = function eval_ () {
     throw new Sk.builtin.NotImplementedError("eval is not yet implemented");
 };
 
+Sk.builtin.exec = function exec () {
+    throw new Sk.builtin.NotImplementedError("exec is not yet implemented");
+};
+
 Sk.builtin.map = function map (fun, seq) {
     var iter, item;
     var retval;
