@@ -541,7 +541,7 @@ SymbolTable.prototype.visitStmt = function (s) {
         case ImportFrom:
             this.visitAlias(s.names, s.lineno);
             break;
-        /*case Exec:
+        case Exec:
             this.visitExpr(s.body);
             if (s.globals) {
                 this.visitExpr(s.globals);
@@ -549,7 +549,7 @@ SymbolTable.prototype.visitStmt = function (s) {
                     this.visitExpr(s.locals);
                 }
             }
-            break;*/
+            break;
         case Global:
             nameslen = s.names.length;
             for (i = 0; i < nameslen; ++i) {
