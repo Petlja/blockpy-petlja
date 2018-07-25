@@ -2252,6 +2252,10 @@ function astForStmt(c, n) {
 }
 
 Sk.astFromParse = function (n, filename, c_flags) {
+    if (Sk.parseCache.lastUnit == n) {
+        return Sk.parseCache.lastParse;
+    }
+    
     var j;
     var num;
     var ch;
@@ -2279,7 +2283,9 @@ Sk.astFromParse = function (n, filename, c_flags) {
                     }
                 }
             }
-            return new Module(stmts);
+            var result = new Module(stmts);
+            Sk.parseCache.lastParse = result;
+            return result;
         case SYM.eval_input:
             goog.asserts.fail("todo;");
         case SYM.single_input:

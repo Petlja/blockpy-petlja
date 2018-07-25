@@ -347,7 +347,20 @@ function makeParser(filename, style) {
     return parseFunc;
 }
 
+Sk.parseCache = {
+    'lastInput': null,
+    'lastParse': null,
+    'lastUnit': null
+}
+
 Sk.parse = function parse(filename, input) {
+    
+    if (Sk.parseCache.lastInput == input) {
+        return Sk.parseCache.lastUnit;
+    } else {
+        Sk.parseCache.lastInput = input;
+    }
+    
     var i;
     var ret;
     var lines;
@@ -364,7 +377,9 @@ Sk.parse = function parse(filename, input) {
     /*
      * Small adjustments here in order to return th flags and the cst
      */
-    return {"cst": ret, "flags": parseFunc.p_flags, "comments": parseFunc.comments};
+    var result = {"cst": ret, "flags": parseFunc.p_flags, "comments": parseFunc.comments};
+    Sk.parseCache.lastUnit = result;
+    return result;
 };
 
 Sk.parseTreeDump = function parseTreeDump(n, indent) {
