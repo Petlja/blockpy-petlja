@@ -1,4 +1,4 @@
-from tifa import Tifa
+from pedal.tifa.tifa import Tifa
 import sys
 import unittest
 

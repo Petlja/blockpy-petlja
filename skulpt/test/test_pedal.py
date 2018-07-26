@@ -6,6 +6,6 @@ from pedal.tifa import tifa_analysis
 
 tifa_analysis()
 
-from pedal.resolver import simple
+from pedal.resolvers import simple
 
 print(simple.select())
