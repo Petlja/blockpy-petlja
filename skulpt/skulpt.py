@@ -680,20 +680,90 @@ def getInternalCodeAsJson():
             ret['files'][f] = open(f).read()		
     return "Sk.internalPy=" + json.dumps(ret)
 
-def getBuiltinsAsJson(options):
-    ret = {}
-    ret['files'] = {}
-    for root in ["src/builtin", "src/lib"]:
-        for dirpath, dirnames, filenames in os.walk(root):
-            for filename in filenames:
-                f = os.path.join(dirpath, filename)
-                ext = os.path.splitext(f)[1]
-                if ext == ".py" or ext == ".js":
-                    if options.verbose:
-                        print("reading", f)
-                    f = f.replace("\\", "/")
-                    ret['files'][f] = open(f).read()
-    return "Sk.builtinFiles=" + json.dumps(ret)
+def getBuiltinsAsJson(options=None, compile=False, dirs=["src/builtin", "src/lib"], prefix=None, additional=False):
+    def replace_prefix(pfx, s):
+        if prefix is not None:
+            return prefix + (s[len(pfx):] if s.startswith(pfx) else s)
+        else:
+            return s
+
+    if compile:
+        files = []
+        for root in dirs:
+            for dirpath, dirnames, filenames in os.walk(root):
+                for filename in filenames:
+                    if filename.endswith('.py') or filename.endswith('.js'):
+                        fn = os.path.join(dirpath, filename)
+                        files.append ([fn, replace_prefix(root, fn)])
+
+        f = open("support/tmp/compile.js", "w")
+        f.write("""
+var files = %s;
+var WHITE_LIST = ['tifa.py'];
+var code = {};
+for (var i in files) {
+    var fn = files[i][0];
+    var key = files[i][1].replace(/\\\\/g, "/");
+    if (/\\.js$/.test(fn) || !fn.endsWith('tifa.py')) {
+        code[key] = read(fn);
+    } else if(/\\.py$/.test(fn)) {
+        var co;
+        try {
+            co = Sk.compile(read(fn), fn, 'exec', true);
+        } catch (e) {
+            print("Compiling: "+fn);
+            print(e);
+            print(e.stack);
+            quit(1);
+        }
+        code[key.replace(/\\.py$/, ".js")] = co.code + '\\nvar $builtinmodule = ' + co.funcname + ';';
+    }
+}
+if (%s) {
+    print("Sk.builtinFiles = Sk.builtinFiles || {};\\nSk.builtinFiles.files = Sk.builtinFiles.files || {};\\n");
+    for (var i in code) {
+        print('Sk.builtinFiles.files[' + JSON.stringify(i) + '] = ' + JSON.stringify(code[i]) + ";\\n");
+    }
+} else {
+    print('Sk.builtinFiles='+JSON.stringify({files: code}));
+}
+        """ % (json.dumps(files, indent=2), 'true' if additional else 'false'))
+        f.close()
+
+        jsquietengine = jsengine.replace('--debugger', '')
+        p = Popen("{0} {1} support/tmp/compile.js".format(jsquietengine, ' '.join(getFileList(FILE_TYPE_TEST))), shell=True, stdout=PIPE, stderr=PIPE)
+
+        outs, errs = p.communicate()
+
+        if p.returncode != 0:
+            print("Compilation failed:")
+            print(outs)
+            if errs:
+                print(errs)
+            sys.exit(1)
+
+        return outs
+
+    else:
+        ret = {}
+        ret['files'] = {}
+        for root in dirs:
+            for dirpath, dirnames, filenames in os.walk(root):
+                for filename in filenames:
+                    f = os.path.join(dirpath, filename)
+                    ext = os.path.splitext(f)[1]
+                    if ext == ".py" or ext == ".js":
+                        if options is not None and options.verbose:
+                            print("reading", f)
+                        fkey = replace_prefix(root, f).replace("\\", "/")
+                        ret['files'][fkey] = open(f).read()
+        if additional:
+
+            outs = 'Sk.builtinFiles = Sk.builtinFiles || {};\nSk.builtinFiles.files = Sk.builtinFiles.files || {};\n'
+            outs += "\n".join(("Sk.builtinFiles.files[%s] = %s;" % (json.dumps(f), json.dumps(ret['files'][f])) for f in ret['files']))
+            return outs
+        else:
+            return "Sk.builtinFiles=" + json.dumps(ret)
 
 def dist(options):
     """builds a 'shippable' version of Skulpt.
@@ -719,7 +789,8 @@ def dist(options):
         print(". Removing distribution directory, '{0}/'.".format(DIST_DIR))
 
     shutil.rmtree(DIST_DIR, ignore_errors=True)
-    if not os.path.exists(DIST_DIR): os.mkdir(DIST_DIR)
+    if not os.path.exists(DIST_DIR): 
+        os.makedirs(DIST_DIR)
 
     if options.uncompressed:
         make_skulpt_js(options,DIST_DIR)
@@ -817,8 +888,8 @@ def dist(options):
         os.unlink("{0}/tmp.js".format(DIST_DIR))
         print("No gzip executable, can't get final size")
 
-    with open(builtinfn, "w") as f:
-        f.write(getBuiltinsAsJson(options))
+    with open(builtinfn, "wb" if options.aot_compile else "w") as f:
+        f.write(getBuiltinsAsJson(options, compile=options.aot_compile))
         if options.verbose:
             print(". Wrote {0}".format(builtinfn))
 
@@ -1007,6 +1078,27 @@ def docbi(options,dest="doc/static"):
         f.write(getBuiltinsAsJson(options))
         if options.verbose:
             print(". Wrote {fileName}".format(fileName=builtinfn))
+            
+def compile(fn, opt=False, p3=False, debug_mode=False):
+    if not os.path.exists(fn):
+        print("%s doesn't exist" % fn)
+        raise SystemExit()
+    if not os.path.exists("support/tmp"):
+        os.mkdir("support/tmp")
+    f = open("support/tmp/run.js", "w")
+    f.write("""
+var fn = '%s';
+var input = read(fn);
+Sk.configure({python3: %s, debugging: %s});
+var co = Sk.compile(input, fn, 'exec', true);
+print(co.code + '\\nvar $builtinmodule = ' + co.funcname + ';');
+    """ % (fn, 'true' if p3 else 'false', 'true' if debug_mode else 'false'))
+    f.close()
+    if opt:
+        os.system("{0} {1}/{2} support/tmp/run.js".format(jsengine, DIST_DIR, OUTFILE_MIN))
+    else:
+        os.system("{0} {1} support/tmp/run.js".format(jsengine, ' '.join(getFileList(FILE_TYPE_TEST))))
+
 
 def assess(student_code, instructor_code):
     student_code = student_code.replace("\\", "/")
@@ -1322,6 +1414,11 @@ Commands:
     docbi            Build library distribution file only and copy to doc/static
     profile [fn] [out] Profile Skulpt using d8 and show processed results
     time [iter]      Average runtime of the test suite over [iter] iterations.
+    rundebug         Run a Python file using Skulpt in debug mode
+    compile          Compile a Python file to Javascript using Skulpt
+    compileall [dirs..] Recursively compile directories of Python (and JS) files
+    combineall [dirs..] Recursively combine directories of Python (and JS) files
+                        into a JS file that provides them as built-in modules.
 
     regenparser      Regenerate parser tests
     regenasttests    Regen abstract symbol table tests
@@ -1347,6 +1444,10 @@ Options:
     -s, --silent       Do not output anything, besides errors
     -u, --uncompressed Makes uncompressed core distribution file for debugging
     -v, --verbose      Make output more verbose [default]
+    -c, --compile      Compile standard library files ahead-of-time to Javascript
+                       (produces large output, not recommended)
+    -p, --prefix       When using 'compileall' or 'combineall', sets a prefix
+                       that will be used instead of the compiled path[s] in output.
     --version          Returns the version string in Bower configuration file.
 '''.format(program=program)
 
@@ -1360,6 +1461,8 @@ def main():
         dest="verbose",
         default=False,
         help="Make output more verbose [default]")
+    parser.add_option("-c", "--compile", action="store_true", dest="aot_compile", default=False)
+    parser.add_option("-p", "--prefix", dest="combine_prefix")
     (options, args) = parser.parse_args()
 
     # This is rather aggressive. Do we really want it?
@@ -1396,6 +1499,12 @@ def main():
         regenruntests(togen)
     elif cmd == "regensymtabtests":
         regensymtabtests()
+    elif cmd == "compile":
+        compile(sys.argv[2])
+    elif cmd == "compileall":
+        print(getBuiltinsAsJson(compile=True, dirs=args[1:], prefix=options.combine_prefix, additional=True))
+    elif cmd == "combineall":
+        print(getBuiltinsAsJson(compile=False, dirs=args[1:], prefix=options.combine_prefix, additional=True))
     elif cmd == "run":
         run(sys.argv[2])
     elif cmd == "assess":

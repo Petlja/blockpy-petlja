@@ -1361,11 +1361,20 @@ Sk.builtin.execf = function execf(python_code, new_globals) {
     if (!new_globals_copy.__name__) {
         new_globals_copy.__name__ = Sk.ffi.remapToPy(filename);
     }
-    var backupGlobals = Sk.globals;
+    var backupGlobals = Sk.globals,
+        backupSysmodules = new Sk.builtin.dict([]);
+    Sk.misceval.iterFor(Sk.sysmodules.tp$iter(), function(key) { 
+        var value = Sk.sysmodules.mp$subscript(key);
+        backupSysmodules.mp$ass_subscript(key, value);
+    })
     Sk.globals = new_globals_copy; // Possibly copy over some "default" ones?
     python_code = Sk.ffi.remapToJs(python_code);
     Sk.importMainWithBody(filename, false, python_code, true);
     Sk.globals = backupGlobals;
+    Sk.misceval.iterFor(backupSysmodules.tp$iter(), function(key) { 
+        var value = backupSysmodules.mp$subscript(key);
+        Sk.sysmodules.mp$ass_subscript(key, value);
+    })
     for (var key in new_globals_copy) {
         var pykey = Sk.ffi.remapToPy(key);
         Sk.builtin.dict.prototype.mp$ass_subscript.call(new_globals, pykey, new_globals_copy[key])

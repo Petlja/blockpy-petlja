@@ -459,10 +459,10 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
         if (modlocs === undefined) {
             if (returnUndefinedOnNotFound) {
                 return undefined;
-                } else {
+            } else {
                 throw new Sk.builtin.ImportError("No module named " + name);
-                }
             }
+        }
 
         // Some builtin modules replace their globals entirely.
         // For their benefit, we copy over any of the standard

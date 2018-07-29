@@ -36,8 +36,8 @@ def hide_correctness():
     MAIN_REPORT.hide_correctness()
 
 
-def suppress(category, label=None):
-    MAIN_REPORT.suppress(type, subtype)
+def suppress(category, label=True):
+    MAIN_REPORT.suppress(category, label)
     
 
 def log(message):

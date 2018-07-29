@@ -30,22 +30,35 @@ var _tryGetSubscript = function(dict, pyName) {
  * Get an attribute
  * @param {string} name JS name of the attribute
  * @param {boolean=} canSuspend Can we return a suspension?
- * @return {undefined}
+ * @return {undefined|Object}
  */
 Sk.builtin.object.prototype.GenericGetAttr = function (name, canSuspend) {
     var res;
     var f;
     var descr;
     var tp;
+    var tpname;
     var dict;
     var getf;
     var pyName = new Sk.builtin.str(name);
     goog.asserts.assert(typeof name === "string");
 
     tp = this.ob$type;
+    tpname = this.tp$name;
+    
     goog.asserts.assert(tp !== undefined, "object has no ob$type!");
 
     dict = this["$d"] || this.constructor["$d"];
+    
+    if (name == "__class__") {
+        if (tp !== null) {
+            return tp;
+        }
+    } else if (name == "__name__") {
+        if (tpname !== null) {
+            return Sk.ffi.remapToPy(tpname);
+        }
+    }
 
     // todo; assert? force?
     if (dict) {

@@ -36,7 +36,7 @@ def _format_message(issue, data):
     elif issue == 'Return outside function':
         # Attempted to return outside of a function
         return ("You attempted to return outside of a function on line {line}."
-                "But you can only return from within a function."
+                " But you can only return from within a function."
                 ).format(line=data['position']['line'])
     elif issue == 'Write out of scope':
         # DEPRECATED
@@ -87,7 +87,7 @@ def _format_message(issue, data):
         else:
             kind = 'variable'
             body = 'value'
-        return ("The {kind} <code>{name}</code> was given a {body}, but"
+        return ("The {kind} <code>{name}</code> was given a {body}, but "
                 "was never used after that."
                 ).format(name=name, kind=kind, body=body)
     elif issue == 'Overwritten Variable':
@@ -107,7 +107,7 @@ def _format_message(issue, data):
                 "over sequences like lists."
                 ).format(line=data['position']['line'], name=data['name'])
     elif issue == 'Incompatible types':
-        op = OPERATION_DESCRIPTION.get(data['operation'], 
+        op = OPERATION_DESCRIPTION.get(data['operation'].__class__, 
                                        str(data['operation']))
         left = data['left'].singular_name
         right = data['right'].singular_name

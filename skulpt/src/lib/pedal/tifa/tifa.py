@@ -35,7 +35,8 @@ class Tifa(ast.NodeVisitor):
     
     def __init__(self, python_3=True, report=None):
         if report is None:
-            self.report = MAIN_REPORT
+            report = MAIN_REPORT
+        self.report = report
         self._initialize_report()
         self.PYTHON_3 = python_3
     
@@ -59,12 +60,13 @@ class Tifa(ast.NodeVisitor):
             data = {}
         if 'position' not in data:
             data['position'] = self.locate()
-        data['message'] = _format_message(issue, data),
-        self.report.attach(issue, category='Analyzer', tool='TIFA',
-                           mistakes=data)
+        data['message'] = _format_message(issue, data)
         if issue not in self.report['tifa']['issues']:
             self.report['tifa']['issues'][issue] = []
         self.report['tifa']['issues'][issue].append(data)
+        if data['message'] != False:
+            self.report.attach(issue, category='Analyzer', tool='TIFA',
+                               mistakes=data)
         
     def locate(self, node=None):
         '''
@@ -747,7 +749,10 @@ class Tifa(ast.NodeVisitor):
         return [self.visit(statement) for statement in nodes]
                 
     def visit_Str(self, node):
-        return StrType()
+        if node.s == "":
+            return StrType(True)
+        else:
+            return StrType(False)
         
     def visit_Subscript(self, node):
         # Handle value
@@ -979,7 +984,7 @@ class Tifa(ast.NodeVisitor):
                     module in base_module.submodules):
                     base_module = base_module.submodules[module]
                 else:
-                    self.report_issue("Submodule not found", {"name": chain})
+                    self.report_issue("Module not found", {"name": chain})
             return base_module
         else:
             self.report_issue("Module not found", {"name": chain})
