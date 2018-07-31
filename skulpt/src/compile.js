@@ -102,18 +102,20 @@ Compiler.prototype.annotateSource = function (ast, shouldStep) {
     if (this.source) {
         lineno = ast.lineno;
         col_offset = ast.col_offset;
-        out("\n//\n// line ", lineno, ":\n// ", this.getSourceLine(lineno), "\n// ");
+        out("\n\n//\n// line ", lineno, ":\n// ", this.getSourceLine(lineno), "\n// ");
         for (i = 0; i < col_offset; ++i) {
             out(" ");
         }
-        out("^\n//\n");
+        out("^\n//");
 
-		out("\nSk.currLineNo = ",lineno, ";\nSk.currColNo = ",col_offset,";\n\n");	//	Added by RNL
-		out("\nSk.currFilename = '",this.filename,"';\n\n");	//	Added by RNL
-        if (shouldStep) {
+		out("\nSk.currLineNo = ",lineno, ";\nSk.currColNo = ",col_offset,";");	//	Added by RNL
+		out("\nSk.currFilename = '",this.filename,"';\n");	//	Added by RNL
+        // Do not trace the standard library
+        if (shouldStep && (!this.filename || 
+                           goog.string.startsWith(this.filename, 'src/lib/'))) {
             out("\nif (typeof Sk.afterSingleExecution == 'function') {\n\tSk.afterSingleExecution($gbl, Sk.currLineNo, Sk.currColNo, Sk.currFilename);\n}\n");
         }
-        out("$currLineNo = ", lineno, ";\n$currColNo = ", col_offset, ";\n\n");
+        out("$currLineNo = ", lineno, ";\n$currColNo = ", col_offset, ";\n");
     }
 };
 

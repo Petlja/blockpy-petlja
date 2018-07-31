@@ -57,3 +57,20 @@ def raise_exception(exception, report=None):
     report.attach(name, category='Runtime', tool='Sandbox',
                   mistakes={'message': message, 'error': exception})
     sandbox.exception = exception
+    
+def get_student_data(report=None):
+    if report is None:
+        report = MAIN_REPORT
+    sandbox = _check_sandbox(report)
+    return sandbox
+
+
+def set_sandbox(sandbox, report=None):
+    '''
+    Update the sandbox to hold the new sandbox instance. Particularly useful
+    for Skulpt, which needs to set the sandbox in an unusual way.
+    '''
+    if report is None:
+        report = MAIN_REPORT
+    report['sandbox']['run'] = sandbox
+    return sandbox

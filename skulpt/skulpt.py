@@ -699,12 +699,17 @@ def getBuiltinsAsJson(options=None, compile=False, dirs=["src/builtin", "src/lib
         f = open("support/tmp/compile.js", "w")
         f.write("""
 var files = %s;
-var WHITE_LIST = ['tifa.py'];
+var WHITE_LIST = ['tifa.py', 'builtin_definitions.py', 'type_definitions.py'];
+function endsWithAny(string, suffixes) {
+    return suffixes.some(function (suffix) {
+        return string.endsWith(suffix);
+    });
+}
 var code = {};
 for (var i in files) {
     var fn = files[i][0];
     var key = files[i][1].replace(/\\\\/g, "/");
-    if (/\\.js$/.test(fn) || !fn.endsWith('tifa.py')) {
+    if (/\\.js$/.test(fn) || !endsWithAny(fn, WHITE_LIST)) {
         code[key] = read(fn);
     } else if(/\\.py$/.test(fn)) {
         var co;
