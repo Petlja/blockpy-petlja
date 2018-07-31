@@ -321,6 +321,9 @@ var $builtinmodule = function (name) {
     // Implementation wouldn't be hard, but it does require a lot of Skulpting
     
     mod.parse = function parse(source, filename) {
+        if (!(/\S/.test(source))) {
+            return Sk.misceval.callsim(mod.Module, new Sk.INHERITANCE_MAP.mod[0]([]));
+        }
         if (filename === undefined) {
             filename = '<unknown>';
         }

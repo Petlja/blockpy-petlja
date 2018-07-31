@@ -6,7 +6,7 @@ from pedal.cait.stretchy_tree_matching import *
 from pedal.cait.easy_node import *
 from pedal.source import set_source
 from pedal.tifa import tifa_analysis
-from pedal.report import MAIN_REPORT
+from pedal.report import MAIN_REPORT, clear_report
 from pedal.cait.cait_api import *
 
 '''
@@ -178,6 +178,7 @@ class CaitTests(unittest.TestCase):
                 print(std_ast.astNode)
 
     def test_many_to_one(self):
+        # print("TESTING MANY TO ONE")
         std_code = "_sum = 0\nlist = [1,2,3,4]\nfor item in list:\n    _sum = _sum + item\nprint(_sum)"
         ins_code = "_accu_ = 0\n_iList_ = __listInit__\nfor _item_ in _iList_:\n    _accu_ = _accu2_ + _item_\nprint(_accu_)"
         ins_tree = StretchyTreeMatcher(ins_code)
@@ -190,8 +191,6 @@ class CaitTests(unittest.TestCase):
             mappings = mappings[0]
             if mappings:
                 self.assertTrue(len(mappings.conflict_keys) == 0, "Conflicting keys when there shouldn't be")
-                #print([k.astNode.id for k in mappings.symbol_table.keys])
-                self.assertEqual(mappings.symbol_table.size(), 4)
                 self.assertTrue(
                     mappings.symbol_table.size() == 4 and
                     len(mappings.symbol_table.values[0]) == 3 and
@@ -324,13 +323,11 @@ class CaitTests(unittest.TestCase):
         except Exception:
             self.assertTrue(True, "Should NOT FAIL")
         set_source("fun = 1 + 0")
-        tifa_analysis()
         parse_program()
         self.assertTrue('cait' in MAIN_REPORT, "No parsing happened")
     '''
     def test_def_use_error(self):
         set_source("fun = fun + 1")
-        tifa_analysis()
         parse_program()
         name_node = MAIN_REPORT["source"]["ast"].body[0].easy_node.target
         self.assertTrue(def_use_error(name_node), "def_use error should have been found but wasn't")
@@ -339,7 +336,6 @@ class CaitTests(unittest.TestCase):
 
     def test_data_type(self):
         set_source("fun = 1 + 1")
-        tifa_analysis()
         parse_program()
         name_node = MAIN_REPORT["source"]["ast"].body[0].easy_node.target
         self.assertTrue(data_type(name_node).is_equal(int), "Data type not successfully found from name node")
@@ -347,15 +343,12 @@ class CaitTests(unittest.TestCase):
 
     def test_find_match(self):
         set_source("fun = 1 + 1")
-        tifa_analysis()
         parse_program()
         match = find_match("_var_ = __expr__")
         self.assertTrue(type(match) == AstMap, "Match not found")
 
-
     def test_find_matches(self):
         set_source("fun = 1 + 1\nfun2 = 2 + 2")
-        tifa_analysis()
         parse_program()
         matches = find_matches("_var_ = __expr__")
         self.assertTrue(type(matches) == list, "find_matches did not return a list")
@@ -366,16 +359,33 @@ class CaitTests(unittest.TestCase):
         set_source("float('0') + 1")
         parse_program()
         matches = find_match("_var_ = __expr__")
-        data_type(matches('_var_'))
+        self.assertIsNone(matches)
+    
         
-    def test_old_stye_api(self):    
+    def test_old_style_api(self):    
         set_source("a = open('file.txt')")
         ast = parse_program()
         calls = ast.find_all("Call")
         self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0].func.ast_name, 'Name')
+        self.assertEqual(calls[0].func.id, 'open')
+        self.assertEqual(len(calls[0].args), 1)
+        
+        clear_report()
+        set_source("def a():\n  pass\na()")
+        ast = parse_program()
+        defs = ast.find_all("FunctionDef")
+        self.assertEqual(len(defs), 1)
+        print(defs[0].body)
+        print(defs[0].name)
+        print(defs[0].args)
+        print(defs[0].__getattr__('name'))
+        self.assertEqual(defs[0]._name, "a")
+        print("SUCCESS")
+        
 
 ct = CaitTests()
-for l in dir(ct):
+for l in dir(ct)[:-2]:
     if l.startswith('test'):
         MAIN_REPORT.clear()
         x = getattr(ct, l)()
