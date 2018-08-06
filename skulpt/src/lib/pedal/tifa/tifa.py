@@ -8,7 +8,8 @@ from pedal.tifa.type_definitions import (UnknownType, RecursedType,
                                          NoneType, BoolType, TupleType,
                                          ListType, StrType, FileType,
                                          DictType, ModuleType, SetType,
-                                         GeneratorType, DayType, TimeType)
+                                         GeneratorType, DayType, TimeType,
+                                         type_from_json)
 from pedal.tifa.literal_definitions import (LiteralNum, LiteralBool,
                                             LiteralNone, LiteralStr,
                                             LiteralTuple)
@@ -493,7 +494,7 @@ class Tifa(ast.NodeVisitor):
             if iter_list_name == "___":
                 self.report_issue("Unconnected blocks", 
                                   {"position": self.locate(iter)})
-            state = self.iterate_variable(iter_list_name)
+            state = self.iterate_variable(iter_list_name, self.locate(iter))
             iter_type = state.type
         else:
             iter_type = self.visit(iter)
@@ -541,9 +542,10 @@ class Tifa(ast.NodeVisitor):
             for key, value in zip(node.keys, node.values):
                 key, value = self.visit(key), self.visit(value)
                 literal = Tifa.get_literal(key)
+                values.append(value)
+                keys.append(key)
                 if literal is not None:
                     literals.append(literal)
-                    values.append(value)
                 else:
                     all_literals = False;
             if all_literals:
@@ -877,12 +879,12 @@ class Tifa(ast.NodeVisitor):
             return self.identify_caller(node.value)
         return None
         
-    def iterate_variable(self, name):
+    def iterate_variable(self, name, position=None):
         '''
         Update the variable by iterating through it - this doesn't do anything
         fancy yet.
         '''
-        return self.load_variable(name)
+        return self.load_variable(name, position)
     
     def store_iter_variable(self, name, type, position=None):
         state = self.store_variable(name, type, position)
@@ -917,14 +919,14 @@ class Tifa(ast.NodeVisitor):
                               read='no', set='yes', over='no')
             self.name_map[current_path][full_name] = new_state
         else:
-            new_state = self.trace_state(variable.state, "store")
+            new_state = self.trace_state(variable.state, "store", position)
             if not variable.in_scope:
                 self.report_issue("Write out of scope", {'name': name})
             # Type change?
             if not are_types_equal(type, variable.state.type):
                 self.report_issue("Type changes", 
                                  {'name': name, 'old': variable.state.type, 
-                                  'new': type})
+                                  'new': type, 'position': position})
             new_state.type = type
             # Overwritten?
             if variable.state.set == 'yes' and variable.state.read == 'no':
@@ -964,7 +966,7 @@ class Tifa(ast.NodeVisitor):
                               read='yes', set='no', over='no')
             self.name_map[current_path][full_name] = new_state
         else:
-            new_state = self.trace_state(variable.state, "load")
+            new_state = self.trace_state(variable.state, "load", position)
             if variable.state.set == 'no':
                 self.report_issue("Initialization Problem", {'name': name})
             if variable.state.set == 'maybe':
@@ -998,8 +1000,15 @@ class Tifa(ast.NodeVisitor):
                     self.report_issue("Module not found", {"name": chain})
             return base_module
         else:
-            self.report_issue("Module not found", {"name": chain})
-            return ModuleType()
+            try:
+                actual_module = __import__(chain, globals(), {}, 
+                                           ['_tifa_definitions'])
+                definitions = actual_module._tifa_definitions()
+                return type_from_json(definitions)
+            except Exception as e:
+                self.report_issue("Module not found", 
+                                  {"name": chain, "error": str(e)})
+                return ModuleType()
             
     def combine_states(self, left, right):
         state = State(left.name, [left], left.type, 'branch', self.locate(),
@@ -1054,7 +1063,7 @@ class Tifa(ast.NodeVisitor):
                 combined = self.combine_states(right_state, parent_state)
                 self.name_map[parent_path_id][right_name] = combined
     
-    def trace_state(self, state, method):
+    def trace_state(self, state, method, position):
         '''
         Makes a copy of the given state with the given method type.
         
@@ -1064,7 +1073,7 @@ class Tifa(ast.NodeVisitor):
         Returns:
             State: The new State
         '''
-        return state.copy(method, self.locate())
+        return state.copy(method, position)
     
     @staticmethod
     def in_scope(full_name, scope_chain):

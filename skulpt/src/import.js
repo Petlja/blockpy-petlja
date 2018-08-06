@@ -687,8 +687,15 @@ Sk.importStar = function (module, loc, global) {
     }
 };
 
+Sk.builtin.__import__Py = function (name, globals, locals, fromlist) {
+    name = Sk.ffi.remapToJs(name);
+    fromlist = Sk.ffi.remapToJs(name);
+    return Sk.builtin.__import__(name, globals, locals, fromlist);
+};
+
 goog.exportSymbol("Sk.importMain", Sk.importMain);
 goog.exportSymbol("Sk.importMainWithBody", Sk.importMainWithBody);
 goog.exportSymbol("Sk.importBuiltinWithBody", Sk.importBuiltinWithBody);
 goog.exportSymbol("Sk.builtin.__import__", Sk.builtin.__import__);
+goog.exportSymbol("Sk.builtin.__import__Py", Sk.builtin.__import__Py);
 goog.exportSymbol("Sk.importStar", Sk.importStar);

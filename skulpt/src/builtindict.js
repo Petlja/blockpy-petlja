@@ -90,6 +90,7 @@ Sk.builtins = {
     "bytearray" : Sk.builtin.bytearray,
     "callable"  : Sk.builtin.callable,
     "delattr"   : Sk.builtin.delattr,
+    "__import__": Sk.builtin.__import__Py,
     "eval_$rn$" : Sk.builtin.eval_,
     "execfile"  : Sk.builtin.execfile,
     "execf"     : Sk.builtin.execf,
