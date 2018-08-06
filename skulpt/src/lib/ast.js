@@ -22,9 +22,6 @@ var $builtinmodule = function (name) {
     };
     
     var convertValue = function(value) {
-        print(value)
-        print(JSON.stringify(value))
-        print("K", typeof value)
         if (value === null) {
             return Sk.builtin.none.none$;
         } else if (isSpecialPyAst(value)) {
@@ -295,7 +292,7 @@ var $builtinmodule = function (name) {
                 Sk.abstr.sattr(self, '_fields', self._fields, true);
                 Sk.abstr.sattr(self, '_attributes', self._attributes, true);
             } else {
-                print(" ".repeat(depth)+"P:", jsNode._astname);
+                //print(" ".repeat(depth)+"P:", jsNode._astname);
                 self.jsNode = jsNode;
                 self.astname = jsNode._astname;
                 var fieldListJs = iter_fieldsJs(jsNode);
