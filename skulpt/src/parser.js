@@ -357,8 +357,6 @@ Sk.parse = function parse(filename, input) {
     
     if (Sk.parseCache.lastInput == input) {
         return Sk.parseCache.lastUnit;
-    } else {
-        Sk.parseCache.lastInput = input;
     }
     
     var i;
@@ -379,6 +377,7 @@ Sk.parse = function parse(filename, input) {
      */
     var result = {"cst": ret, "flags": parseFunc.p_flags, "comments": parseFunc.comments};
     Sk.parseCache.lastUnit = result;
+    Sk.parseCache.lastInput = input;
     return result;
 };
 
