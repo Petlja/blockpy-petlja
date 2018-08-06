@@ -22,6 +22,9 @@ var $builtinmodule = function (name) {
     };
     
     var convertValue = function(value) {
+        print(value)
+        print(JSON.stringify(value))
+        print("K", typeof value)
         if (value === null) {
             return Sk.builtin.none.none$;
         } else if (isSpecialPyAst(value)) {
@@ -31,8 +34,12 @@ var $builtinmodule = function (name) {
             var subvalues = [];
             for (var j = 0; j < value.length; j += 1) {
                 var subvalue = value[j];
-                var constructorName = functionName(subvalue.constructor);
-                if (isJsAst(subvalue)) {
+                if (isSpecialPyAst(subvalue)) {
+                    var constructorName = functionName(subvalue);
+                    subvalue = Sk.misceval.callsim(mod[constructorName], constructorName, true);
+                    subvalues.push(subvalue);
+                } else if (isJsAst(subvalue)) {
+                    var constructorName = functionName(subvalue.constructor);
                     subvalue = Sk.misceval.callsim(mod[constructorName], subvalue);
                     subvalues.push(subvalue);
                 }
@@ -60,6 +67,7 @@ var $builtinmodule = function (name) {
                 case "Store": case "Load": case "Del": case "Param":
                 case "And": case "Or": case "Xor": case "Not":
                 case "Invert": case "UAdd": case "USub":
+                case "Lt": case "Gt": case "LtE": case "GtE":
                     return true;
                 default: return false;
             }
@@ -287,7 +295,7 @@ var $builtinmodule = function (name) {
                 Sk.abstr.sattr(self, '_fields', self._fields, true);
                 Sk.abstr.sattr(self, '_attributes', self._attributes, true);
             } else {
-                //print(" ".repeat(depth)+"P:", jsNode._astname);
+                print(" ".repeat(depth)+"P:", jsNode._astname);
                 self.jsNode = jsNode;
                 self.astname = jsNode._astname;
                 var fieldListJs = iter_fieldsJs(jsNode);

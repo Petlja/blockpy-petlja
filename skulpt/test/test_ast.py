@@ -19,6 +19,12 @@ assert addition.body[0].endlineno == 1, "Addition's endlineno was not 1"
 print("1 + 2")
 #print(ast.dump(addition)
 
+comparison = ast.parse('1 < 1')
+assert isinstance(comparison, ast.Module), "Unable to parse comparison"
+assert isinstance(comparison.body[0].value, ast.Compare), "Could not access Compare object"
+print(comparison.body[0].value.ops)
+assert len(comparison.body[0].value.ops) == 1, "Did not retrieve operations from comparison"
+
 FOR_CODE = "for x in y:\n    a = 0"
 for_loop = ast.parse(FOR_CODE)
 print("*"*20)

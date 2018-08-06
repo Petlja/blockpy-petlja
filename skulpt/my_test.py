@@ -1,10 +1,3 @@
-def x():
-    0+''
+import ast
 
-try:
-    x()
-except:
-    import sys
-    ei = sys.exc_info()[2].tb_lineno
-    print(ei)
-    print(ei[2].tb_lineno)
+print(ast.dump(ast.parse('1 < 1')))
