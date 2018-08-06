@@ -349,6 +349,9 @@ var $builtinmodule = function (name) {
         var ret = fun.toString();
         ret = ret.substr('function '.length);
         ret = ret.substr(0, ret.indexOf('('));
+        if (ret == "In_") {
+            ret = "In";
+        }
         return ret;
     }
     
@@ -358,9 +361,6 @@ var $builtinmodule = function (name) {
         for (var i=0; i < Sk.INHERITANCE_MAP[base].length; i++) {
             var nodeType = Sk.INHERITANCE_MAP[base][i];
             var nodeName = functionName(nodeType);
-            if (nodeName == "In_") {
-                nodeName = "In";
-            }
             var nodeClass = function($gbl, $loc) { return this;};
             mod[nodeName] = Sk.misceval.buildClass(mod, nodeClass, nodeName, [mod[base]])
         }

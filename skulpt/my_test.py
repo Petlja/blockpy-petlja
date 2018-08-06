@@ -1,6 +1,3 @@
 import ast
 
-try:
-    ast.parse('1\n1 1 11\n2')
-except SyntaxError as e:
-    print("LINE:", e.lineno)
+print(ast.dump(ast.parse('1 in 2')))
