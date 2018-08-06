@@ -65,6 +65,8 @@ var $builtinmodule = function (name) {
                 case "And": case "Or": case "Xor": case "Not":
                 case "Invert": case "UAdd": case "USub":
                 case "Lt": case "Gt": case "LtE": case "GtE":
+                case "NotEq": case "Eq": case "Is": case "IsNot":
+                case "In":  case "NotIn":
                     return true;
                 default: return false;
             }
