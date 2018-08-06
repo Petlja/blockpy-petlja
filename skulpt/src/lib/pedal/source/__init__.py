@@ -38,7 +38,7 @@ def _check_issues(code, report):
                       mistakes={'message': "Invalid syntax on line "
                                            +str(e.lineno),
                                 'error': e,
-                                'position': e.lineno})
+                                'position': {"line": e.lineno}})
         report['source']['success'] = False
         if 'ast' in report['source']:
             del report['source']['ast']
