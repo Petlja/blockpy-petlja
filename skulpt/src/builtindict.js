@@ -55,6 +55,7 @@ Sk.builtins = {
     "OverflowError"      : Sk.builtin.OverflowError,
     "OperationError"     : Sk.builtin.OperationError,
     "RuntimeError"       : Sk.builtin.RuntimeError,
+    "SyntaxError"       : Sk.builtin.SyntaxError,
     "StopIteration"      : Sk.builtin.StopIteration,
 
     "dict"      : Sk.builtin.dict,

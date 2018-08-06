@@ -284,8 +284,30 @@ Sk.builtin.SyntaxError = function (args) {
         return o;
     }
     Sk.builtin.StandardError.apply(this, arguments);
+    if (arguments.length >= 3) {
+        this.lineno = Sk.ffi.remapToPy(arguments[2]);
+    } else {
+        this.lineno = Sk.ffi.remapToPy(null);
+    }
 };
 Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.StandardError);
+Sk.builtin.SyntaxError.prototype.tp$getattr = function (name) {
+    if (name != null && (Sk.builtin.checkString(name) || typeof name === "string")) {
+        var _name = name;
+
+        // get javascript string
+        if (Sk.builtin.checkString(name)) {
+            _name = Sk.ffi.remapToJs(name);
+        }
+
+        if (_name === "lineno") {
+            return this[_name];
+        }
+    }
+
+    // if we have not returned yet, try the genericgetattr
+    return Sk.builtin.object.prototype.GenericGetAttr(name);
+};
 
 /**
  * @constructor
