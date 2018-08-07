@@ -27,6 +27,8 @@ var $builtinmodule = function (name) {
         } else if (isSpecialPyAst(value)) {
             var constructorName = functionName(value);
             return Sk.misceval.callsim(mod[constructorName], constructorName, true);
+        } else if (typeof value == 'number') {
+            return Sk.builtin.assk$(value);
         } else if (Array === value.constructor) {
             var subvalues = [];
             for (var j = 0; j < value.length; j += 1) {

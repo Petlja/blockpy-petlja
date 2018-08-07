@@ -29,6 +29,20 @@ def get_builtin_module(name):
             fields={
                 'randint': FunctionType(name='randint', returns=NumType())
             })
+    elif name == 'string':
+        return ModuleType('string',
+            fields = {
+                'letters': StrType(empty=False),
+                'digits': StrType(empty=False),
+                'ascii_letters': StrType(empty=False),
+                'punctuation': StrType(empty=False),
+                'printable': StrType(empty=False),
+                'whitespace': StrType(empty=False),
+                'ascii_uppercase': StrType(empty=False),
+                'ascii_lowercase': StrType(empty=False),
+                'hexdigits': StrType(empty=False),
+                'octdigits': StrType(empty=False),
+            })
     elif name == 'turtle':
         return ModuleType('turtle',
                 fields={
@@ -112,6 +126,7 @@ def _builtin_sequence_constructor(sequence_type):
         return_type = sequence_type(empty=True)
         if args:
             return_type.subtype = args[0].index(LiteralNum(0))
+            return_type.empty = False
         return return_type
     return sequence_call
     
@@ -125,7 +140,7 @@ def _builtin_zip(tifa, function_type, callee, args, position):
         tupled_types = TupleType(subtypes=[])
         for arg in args:
             tupled_types.append(arg.index(0))
-        return ListType(tupled_types)
+        return ListType(tupled_types, empty=False)
     return ListType(empty=True)
 
 def get_builtin_function(name):
@@ -172,7 +187,7 @@ def get_builtin_function(name):
         return FunctionType(name="open", returns=FileType())
     # List Functions
     elif name == "map":
-        return FunctionType(name="map", returns=ListType())
+        return FunctionType(name="map", returns=ListType(empty=False))
     elif name == "list":    
         return FunctionType(name="list", 
                             definition=_builtin_sequence_constructor(ListType))
@@ -192,9 +207,9 @@ def get_builtin_function(name):
         return FunctionType(name="filter", returns='identity')
     # Special Functions
     elif name == "range":
-        return FunctionType(name="range", returns=ListType(NumType()))
+        return FunctionType(name="range", returns=ListType(NumType(), empty=False))
     elif name == "dir":
-        return FunctionType(name="dir", returns=ListType(StrType()))
+        return FunctionType(name="dir", returns=ListType(StrType(), empty=False))
     elif name == "max":
         return FunctionType(name="max", returns='element')
     elif name == "min":
@@ -206,4 +221,5 @@ def get_builtin_function(name):
     elif name == "globals":
         return FunctionType(name="globals", 
                             returns=DictType(keys=StrType(), 
-                                             values=UnknownType()))
+                                             values=UnknownType(),
+                                             empty=False))

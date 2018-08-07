@@ -213,9 +213,9 @@ StrType.fields.update({
     "istitle": FunctionType(name='istitle', returns=BoolType()),
     "isupper": FunctionType(name='isupper', returns=BoolType()),
     # Methods that return List of Strings
-    "rsplit": FunctionType(name='rsplit', returns=ListType(StrType())),
-    "split": FunctionType(name='split', returns=ListType(StrType())),
-    "splitlines": FunctionType(name='splitlines', returns=ListType(StrType()))
+    "rsplit": FunctionType(name='rsplit', returns=ListType(StrType(), empty=False)),
+    "split": FunctionType(name='split', returns=ListType(StrType(), empty=False)),
+    "splitlines": FunctionType(name='splitlines', returns=ListType(StrType(), empty=False))
 })
 class FileType(Type):
     singular_name = 'a file'
@@ -226,6 +226,8 @@ class FileType(Type):
         'read': FunctionType(name='read', returns=StrType()),
         'readlines': FunctionType(name='readlines', returns=ListType(StrType(), False))
     })
+    def is_empty(self):
+        return False
     
 class DictType(Type):
     singular_name = 'a dictionary'
@@ -252,24 +254,26 @@ class DictType(Type):
         if attr == 'items':
             def _items(tifa, function_type, callee, args, position):
                 if self.literals is None:
-                    return ListType(TupleType([self.keys, self.values]))
+                    return ListType(TupleType([self.keys, self.values]), 
+                                    empty=False)
                 else:
                     return ListType(TupleType([self.literals[0].type(),
-                                               self.values[0]]))
+                                               self.values[0]]), 
+                                    empty=False)
             return FunctionType(_items, 'items')
         elif attr == 'keys':
             def _keys(tifa, function_type, callee, args, position):
                 if self.literals is None:
-                    return ListType(self.keys)
+                    return ListType(self.keys, empty=False)
                 else:
-                    return ListType(self.literals[0].type())
+                    return ListType(self.literals[0].type(), empty=False)
             return FunctionType(_keys, 'keys')
         elif attr == 'values':
             def _items(tifa, function_type, callee, args, position):
                 if self.literals is None:
-                    return ListType(self.values)
+                    return ListType(self.values, empty=False)
                 else:
-                    return ListType(self.values[0])
+                    return ListType(self.values[0], empty=False)
             return FunctionType(_values, 'values')
         return Type.load_attr(self, attr, tifa, callee, callee_position)
 
