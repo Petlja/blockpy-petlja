@@ -353,6 +353,8 @@ var $builtinmodule = function (name) {
         ret = ret.substr(0, ret.indexOf('('));
         if (ret == "In_") {
             ret = "In";
+        } else if (ret == 'Import_') {
+            ret = 'Import';
         }
         return ret;
     }
