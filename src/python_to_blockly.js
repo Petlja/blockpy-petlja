@@ -835,7 +835,12 @@ PythonToBlocks.prototype.Global = function(node)
  */
 PythonToBlocks.prototype.Expr = function(node, is_top_level) {
     var value = node.value;
-    
+
+    if(value._astname == "Call") {
+        value.act_as_statement = true;
+        return this.convert(value);
+    }
+
     var converted = this.convert(value);
     if (converted.constructor == Array) {
         return converted[0];
@@ -1407,9 +1412,16 @@ PythonToBlocks.prototype.Call = function(node) {
                         argumentsNormal["ARG"+i] = this.convert(args[i]);
                         argumentsMutation["*"+i] = this.convert(args[i]);
                     }
-                    return block("procedures_callreturn", node.lineno, {}, argumentsNormal, {
-                        "inline": "true"
-                    }, argumentsMutation);
+                    if(node.act_as_statement) {
+                        return block("procedures_callnoreturn", node.lineno, {}, argumentsNormal, {
+                            "inline": "true"
+                        }, argumentsMutation);
+                    }
+                    else {
+                        return block("procedures_callreturn", node.lineno, {}, argumentsNormal, {
+                            "inline": "true"
+                        }, argumentsMutation);
+                    }
             }
         // Direct function call
         case "Attribute":
