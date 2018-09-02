@@ -5,7 +5,7 @@ Blockly.Blocks['controls_forEach'] = {
    */
   init: function() {
     this.jsonInit({
-      "message0": "for each item %1 in list %2 : ", //Blockly.Msg.CONTROLS_FOREACH_TITLE,
+      "message0": Blockly.Msg.CONTROLS_FOREACH_TITLE + " : ", 
       "args0": [
         {
           "type": "input_value",

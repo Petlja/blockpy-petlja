@@ -1,9 +1,24 @@
+Blockly.Blocks['text_input_noprompt'] = {
+  init: function() {
+    this.appendDummyInput()
+        .appendField(Blockly.Msg.TEXT_INPUT);
+    this.setOutput(true, "String");
+    this.setColour(230);
+    this.setTooltip('');
+    this.setHelpUrl('');
+  }
+};
+Blockly.Python['text_input_noprompt'] = function(block) {
+  var code = 'input()';
+  return [code, Blockly.Python.ORDER_NONE];
+};
+
 Blockly.Blocks['text_input'] = {
   init: function() {
     this.appendDummyInput()
-        .appendField("input")
+        .appendField(Blockly.Msg.TEXT_INPUT)
         .appendField(this.newQuote_(true))
-        .appendField(new Blockly.FieldTextInput("with prompt"), "MESSAGE")
+        .appendField(new Blockly.FieldTextInput(Blockly.Msg.TEXT_INPUT_PROMPT_SAMPLE), "MESSAGE")
         .appendField(this.newQuote_(false));
     this.setOutput(true, "String");
     this.setColour(230);
@@ -22,5 +37,5 @@ Blockly.Blocks['text_input'] = {
 Blockly.Python['text_input'] = function(block) {
   var message = block.getFieldValue('MESSAGE');
   var code = 'input('+Blockly.Python.quote_(message)+')';
-  return [code, Blockly.JavaScript.ORDER_NONE];
+  return [code, Blockly.Python.ORDER_NONE];
 };

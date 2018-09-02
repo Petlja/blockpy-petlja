@@ -1377,7 +1377,9 @@ PythonToBlocks.prototype.Call = function(node) {
                             }, { "@items": args.length})];
                     }
                 case "input":
-                    return block("text_input", node.lineno, {"MESSAGE": args.length ? this.Str_value(args[0]) :""});
+                    if(args.length)
+                        return block("text_input", node.lineno, {"MESSAGE":this.Str_value(args[0])});
+                    return block("text_input_noprompt", node.lineno);
                 case "abs":
                     return block("math_single", node.lineno, {"OP": "ABS"}, {"NUM": this.convert(args[0])})
                 case "round":
