@@ -1402,6 +1402,8 @@ PythonToBlocks.prototype.Call = function(node) {
                         {"inline": "true"}, 
                         {"@name": "xrange",
                          "": this.convert(args[0])})
+                case "range":
+                    return block("range_list1", node.lineno, {}, {"LIMIT": this.convert(args[0])})
                 default:
                     if (starargs !== null && starargs.length > 0) {
                         throw new Error("*args (variable arguments) are not implemented yet.");

@@ -304,3 +304,26 @@ Blockly.Python['lists_getIndex_only'] = function(block) {
   throw 'Unhandled combination (lists_getIndex).';
 };
 
+Blockly.Blocks['range_list1'] = {
+  init: function() {
+    
+    this.appendValueInput('LIMIT')
+        .setCheck('Number')
+        .appendField("0   до ");
+    this.appendDummyInput()
+        .appendField("- 1");
+    this.setInputsInline(true);
+    this.setOutput(true, 'Array');
+    this.setColour(Blockly.Blocks.lists.HUE);
+    this.setTooltip('');
+    this.setHelpUrl('');
+  }
+};
+
+Blockly.Python['range_list1'] = function(block) {
+  var value = Blockly.Python.valueToCode(block, 'LIMIT',
+      Blockly.Python.ORDER_NONE) || '___';
+  var code = 'range('+ value +')';
+  return [code, Blockly.Python.ORDER_FUNCTION_CALL];
+};
+
