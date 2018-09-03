@@ -309,13 +309,17 @@ Blockly.Blocks['range_list1'] = {
     
     this.appendValueInput('LIMIT')
         .setCheck('Number')
-        .appendField("0   до ");
+        .appendField("листа од ")
     this.appendDummyInput()
-        .appendField("- 1");
+        .appendField(" бројева");
     this.setInputsInline(true);
     this.setOutput(true, 'Array');
     this.setColour(Blockly.Blocks.lists.HUE);
-    this.setTooltip('');
+    var thisBlock = this;
+    this.setTooltip(function() {
+      return "Листа од %1 узастопних бројева почевши од броја 0.".replace('%1',
+          Blockly.Python.valueToCode(thisBlock, 'LIMIT', Blockly.Python.ORDER_RELATIONAL) || '___');
+    });
     this.setHelpUrl('');
   }
 };
